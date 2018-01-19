@@ -13,9 +13,9 @@ static bool createTable()
     QSqlDatabase dblite = QSqlDatabase::database("lite");
     QSqlQuery query = QSqlQuery(dblite);
 
-    QString strSQL = "CREATE TABLE users (user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_name VARCHAR(50) NOT NULL, user_fio VARCHAR(50) NOT NULL, user_pass VARCHAR(50) NOT NULL);";
+    QString strSQL = "CREATE TABLE users (user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_name VARCHAR(50) NOT NULL, user_fio VARCHAR(50) NOT NULL, user_pass VARCHAR(50) NOT NULL, user_active INTEGER)";
     query.exec(strSQL);
-    strSQL="INSERT INTO `users` VALUES (1,'Admin','Администратор А.А.','defrag');";
+    strSQL="INSERT INTO `users` (user_id,user_name,user_fio,user_pass,user_active) VALUES (1,'Admin','Администратор А.А.','defrag',1)";
     query.exec(strSQL);
     strSQL="CREATE TABLE `connections` ( `conn_id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `conn_name`	VARCHAR(50) NOT NULL UNIQUE, `conn_host`	varchar(50) NOT NULL, `conn_db`	VARCHAR(100) NOT NULL, `conn_user`	VARCHAR(50) NOT NULL, `conn_pass`	VARCHAR(50) NULL);";
     query.exec(strSQL);

@@ -7,6 +7,10 @@
 #include <QLabel>
 #include <QSqlTableModel>
 #include <QSqlQueryModel>
+#include <QProgressDialog>
+#include <QThread>
+#include "operatorsdata.h"
+
 
 struct userdata
 {
@@ -26,6 +30,15 @@ public:
     explicit MainWindow(QSqlRecord user, QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    void on_actionUsers_triggered();
+    void on_tableView_doubleClicked(const QModelIndex &idx);
+    void startDBConnect();
+    void finishDBConnect();
+    void errogConnectInfo(QString str);
+    void getStaus(bool status);
+    void getTableOperators(QVector<dataOp> tblOp);
+
 private:
     Ui::MainWindow *ui;
     userdata currentUser;
@@ -37,6 +50,14 @@ private:
     void openCentralDB(void);
     void createUI();
     void setupTerminalModel();
+    void createUIOperarors();
+    QMap<QString, QString> azsConn;
+    QProgressDialog *progress;
+    bool isConnected;
+    QThread *thread;
+    QModelIndex idxTerm;
+    dataOp s;
+    QVector<dataOp> opVector;
 
 
 };

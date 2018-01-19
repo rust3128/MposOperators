@@ -1,5 +1,12 @@
 <RCC>
     <qresource prefix="/">
         <file>Images/login.png</file>
+        <file>Images/users.png</file>
+        <file>Images/cancel.png</file>
+        <file>Images/user_accept.png</file>
+        <file>Images/user_add.png</file>
+        <file>Images/user_delete.png</file>
+        <file>Images/user_edit.png</file>
+        <file>Images/exit.png</file>
     </qresource>
 </RCC>

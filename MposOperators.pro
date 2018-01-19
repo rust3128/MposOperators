@@ -27,17 +27,23 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     loggingcategories.cpp \
-    logindialog.cpp
+    logindialog.cpp \
+    usersdialog.cpp \
+    dbaseconnect.cpp
 
 HEADERS += \
         mainwindow.h \
     databases.h \
     loggingcategories.h \
-    logindialog.h
+    logindialog.h \
+    usersdialog.h \
+    dbaseconnect.h \
+    operatorsdata.h
 
 FORMS += \
         mainwindow.ui \
-    logindialog.ui
+    logindialog.ui \
+    usersdialog.ui
 
 DISTFILES +=
 
