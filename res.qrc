@@ -8,5 +8,7 @@
         <file>Images/user_delete.png</file>
         <file>Images/user_edit.png</file>
         <file>Images/exit.png</file>
+        <file>Images/user_removed.png</file>
+        <file>Images/logo.ico</file>
     </qresource>
 </RCC>

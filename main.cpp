@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         return 1;
 
     MainWindow *w = new MainWindow(loginDlg->getUser());
-
+    loginDlg->deleteLater();
     w->show();
 
     return a.exec();

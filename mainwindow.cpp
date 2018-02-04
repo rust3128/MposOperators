@@ -35,6 +35,10 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     openCentralDB();
     setupTerminalModel();
 
+    connect(ui->radioButtonActive,SIGNAL(clicked()),this,SLOT(filterSet()));
+    connect(ui->radioButtonAll,SIGNAL(clicked()),this,SLOT(filterSet()));
+    connect(ui->radioButtonRemove,SIGNAL(clicked()),this,SLOT(filterSet()));
+
 }
 
 MainWindow::~MainWindow()
@@ -113,7 +117,7 @@ void MainWindow::setupTerminalModel()
 
 void MainWindow::on_actionUsers_triggered()
 {
-    UsersDialog *usersDlg = new UsersDialog(this);
+    UsersDialog *usersDlg = new UsersDialog();
     usersDlg->exec();
 }
 
@@ -174,7 +178,10 @@ void MainWindow::finishDBConnect()
     }
     ui->frameOperators->show();
     ui->tableView->hide();
+    ui->labelSelect->hide();
     ui->tableWidget->clearContents();
+    ui->labelAzsTitle->setText("АЗС "+modelTerminals->data(modelTerminals->index(idxTerm.row(),0)).toString()
+                               +"\n"+modelTerminals->data(modelTerminals->index(idxTerm.row(),1)).toString());
     createUIOperarors();
 
 }
@@ -199,13 +206,54 @@ void MainWindow::getTableOperators(QVector<dataOp> tblOp)
 
 }
 
+void MainWindow::filterSet()
+{
+    bool match;
+    if (ui->radioButtonAll->isChecked()){
+        qDebug() << "All";
+        for(int i=0; i < ui->tableWidget->rowCount(); ++i){
+           ui->tableWidget->setRowHidden(i,false);
+        }
+
+    } else if (ui->radioButtonActive->isChecked()){
+        qDebug() << "Active";
+        for( int i = 0; i < ui->tableWidget->rowCount(); ++i )
+        {
+            match = false;
+            QTableWidgetItem *item = ui->tableWidget->item( i, 4 );
+            qDebug() << item->text();
+            if( item->text()=="1")
+            {
+                match = true;
+            }
+
+            ui->tableWidget->setRowHidden( i, !match );
+        }
+
+    } else if (ui->radioButtonRemove) {
+        qDebug() << "Remove";
+        for( int i = 0; i < ui->tableWidget->rowCount(); ++i )
+        {
+            match = false;
+            QTableWidgetItem *item = ui->tableWidget->item( i, 4 );
+            qDebug() << item->text();
+            if( item->text()=="0")
+            {
+                match = true;
+            }
+
+            ui->tableWidget->setRowHidden( i, !match );
+        }
+    }
+}
+
 void MainWindow::createUIOperarors()
 {
 
 
-    QStringList headers = QStringList() << "ID" << "Логин" << "ФИО" << "Пароль" <<"Активен";
+    QStringList headers = QStringList() << "ID" << "Логин" << "ФИО" << "Пароль" << "work" <<"Статус";
 
-    ui->tableWidget->setColumnCount(5);
+    ui->tableWidget->setColumnCount(6);
     ui->tableWidget->setShowGrid(true); // Включаем сетку
     // Разрешаем выделение только одного элемента
     ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -218,6 +266,7 @@ void MainWindow::createUIOperarors()
 //    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
     // Скрываем колонку под номером 0
     ui->tableWidget->hideColumn(0);
+    ui->tableWidget->hideColumn(4);
     for(int i=0;i<opVector.size();++i){
         ui->tableWidget->insertRow(i);
         ui->tableWidget->setItem(i,0,new QTableWidgetItem(opVector.at(i).Id));
@@ -225,31 +274,50 @@ void MainWindow::createUIOperarors()
         ui->tableWidget->setItem(i,2,new QTableWidgetItem(opVector.at(i).fio));
         ui->tableWidget->setItem(i,3,new QTableWidgetItem(opVector.at(i).pswd));
 
+
         QWidget *checkBoxActiv = new QWidget();
-        QCheckBox *checkBox = new QCheckBox();
+//        QCheckBox *checkBox = new QCheckBox();
+        QLabel *labelWork = new QLabel();
+
         QHBoxLayout *layoutCheckBox = new QHBoxLayout(checkBoxActiv);
-        layoutCheckBox->addWidget(checkBox);
+        layoutCheckBox->addWidget(labelWork);
         layoutCheckBox->setContentsMargins(0,0,0,0);
 
 
 //        item->data(Qt::CheckStateRole);
+        QString str;
 
         if(opVector.at(i).isactive){
-            checkBox->setChecked(true);
-            checkBox->setText("Работает");
+//            checkBox->setChecked(true);
+//            checkBox->setText("Работает");
+//            checkBox->setStyleSheet("font-size: 12pt; color: green");
+            str="<img src=\":/Images/user_accept.png\"> Работает";
+            labelWork->setStyleSheet("font-size: 12pt; color: green");
+            ui->tableWidget->setItem(i,4,new QTableWidgetItem("1"));
+
 
             //ui->tableWidget->setItem(i,4,new QTableWidgetItem("Активен"));
         } else {
-            checkBox->setChecked(false);
-            checkBox->setText("Уволен");
+//            checkBox->setChecked(false);
+//            checkBox->setStyleSheet("font-size: 12pt; color: red");
+////            checkBox->setStyleSheet("font-size: 12px");
+//            checkBox->setText("Уволен");
 //            checkBoxActiv->setBackgroundRole();
+            str="<img src=\":/Images/user_removed.png\"> Уволен";
+            labelWork->setStyleSheet("font-size: 12pt; color: red");
+            ui->tableWidget->setItem(i,4,new QTableWidgetItem("0"));
 
 //            ui->tableWidget->hideRow(i);
 //            ui->tableWidget->setItem(i,4,new QTableWidgetItem("Уволен"));
         }
-        ui->tableWidget->setCellWidget(i,4,checkBoxActiv);
+        labelWork->setTextFormat(Qt::RichText);
+        labelWork->setText(str);
+        ui->tableWidget->setCellWidget(i,5,checkBoxActiv);
 
     }
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->verticalHeader()->hide();
+    ui->tableWidget->verticalHeader()->setDefaultSectionSize(40);
+    ui->radioButtonActive->setChecked(true);
+    filterSet();
 }

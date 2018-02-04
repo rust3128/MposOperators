@@ -38,6 +38,7 @@ private slots:
     void errogConnectInfo(QString str);
     void getStaus(bool status);
     void getTableOperators(QVector<dataOp> tblOp);
+    void filterSet();
 
 private:
     Ui::MainWindow *ui;
