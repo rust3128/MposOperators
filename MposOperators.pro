@@ -29,7 +29,8 @@ SOURCES += \
     loggingcategories.cpp \
     logindialog.cpp \
     usersdialog.cpp \
-    dbaseconnect.cpp
+    dbaseconnect.cpp \
+    newoperatordialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,12 +39,14 @@ HEADERS += \
     logindialog.h \
     usersdialog.h \
     dbaseconnect.h \
-    operatorsdata.h
+    operatorsdata.h \
+    newoperatordialog.h
 
 FORMS += \
         mainwindow.ui \
     logindialog.ui \
-    usersdialog.ui
+    usersdialog.ui \
+    newoperatordialog.ui
 
 DISTFILES +=
 

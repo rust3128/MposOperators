@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>MPosTools Идентификация пользователя</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="res.qrc">
+    <normaloff>:/Images/logo.ico</normaloff>:/Images/logo.ico</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="2" rowspan="4">
     <widget class="Line" name="line">

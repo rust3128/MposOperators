@@ -3,6 +3,7 @@
 #include "loggingcategories.h"
 #include "usersdialog.h"
 #include "dbaseconnect.h"
+#include "newoperatordialog.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
@@ -22,14 +23,7 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     this->resize(1024,768);
     currentUser.id=user.value("user_id").toInt();
     currentUser.fio=user.value("user_fio").toString();
-//    ui->tableWidget->setColumnCount( 2 );
-//    ui->tableWidget->setRowCount( 2 );
-//    QTableWidgetItem *newItem = new QTableWidgetItem( "Preved!" );
-//    ui->tableWidget->setItem( 1, 1, newItem );
-
     ui->frameOperators->hide();
-
-//    qRegisterMetaType<opVector>("opVector");
 
     infoUser2StatusBar();
     openCentralDB();
@@ -210,18 +204,15 @@ void MainWindow::filterSet()
 {
     bool match;
     if (ui->radioButtonAll->isChecked()){
-        qDebug() << "All";
         for(int i=0; i < ui->tableWidget->rowCount(); ++i){
            ui->tableWidget->setRowHidden(i,false);
         }
 
     } else if (ui->radioButtonActive->isChecked()){
-        qDebug() << "Active";
         for( int i = 0; i < ui->tableWidget->rowCount(); ++i )
         {
             match = false;
             QTableWidgetItem *item = ui->tableWidget->item( i, 4 );
-            qDebug() << item->text();
             if( item->text()=="1")
             {
                 match = true;
@@ -231,12 +222,10 @@ void MainWindow::filterSet()
         }
 
     } else if (ui->radioButtonRemove) {
-        qDebug() << "Remove";
         for( int i = 0; i < ui->tableWidget->rowCount(); ++i )
         {
             match = false;
             QTableWidgetItem *item = ui->tableWidget->item( i, 4 );
-            qDebug() << item->text();
             if( item->text()=="0")
             {
                 match = true;
@@ -284,31 +273,22 @@ void MainWindow::createUIOperarors()
         layoutCheckBox->setContentsMargins(0,0,0,0);
 
 
-//        item->data(Qt::CheckStateRole);
+
         QString str;
 
         if(opVector.at(i).isactive){
-//            checkBox->setChecked(true);
-//            checkBox->setText("Работает");
-//            checkBox->setStyleSheet("font-size: 12pt; color: green");
+
             str="<img src=\":/Images/user_accept.png\"> Работает";
             labelWork->setStyleSheet("font-size: 12pt; color: green");
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("1"));
 
 
-            //ui->tableWidget->setItem(i,4,new QTableWidgetItem("Активен"));
+
         } else {
-//            checkBox->setChecked(false);
-//            checkBox->setStyleSheet("font-size: 12pt; color: red");
-////            checkBox->setStyleSheet("font-size: 12px");
-//            checkBox->setText("Уволен");
-//            checkBoxActiv->setBackgroundRole();
             str="<img src=\":/Images/user_removed.png\"> Уволен";
             labelWork->setStyleSheet("font-size: 12pt; color: red");
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("0"));
 
-//            ui->tableWidget->hideRow(i);
-//            ui->tableWidget->setItem(i,4,new QTableWidgetItem("Уволен"));
         }
         labelWork->setTextFormat(Qt::RichText);
         labelWork->setText(str);
@@ -320,4 +300,10 @@ void MainWindow::createUIOperarors()
     ui->tableWidget->verticalHeader()->setDefaultSectionSize(40);
     ui->radioButtonActive->setChecked(true);
     filterSet();
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    NewOperatorDialog *dlgOper = new NewOperatorDialog();
+    dlgOper->exec();
 }
