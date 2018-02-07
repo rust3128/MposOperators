@@ -4,12 +4,14 @@
 #include "usersdialog.h"
 #include "dbaseconnect.h"
 #include "newoperatordialog.h"
+#include "applaydialog.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QCheckBox>
 #include <QHBoxLayout>
+
 
 
 
@@ -24,6 +26,7 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     currentUser.id=user.value("user_id").toInt();
     currentUser.fio=user.value("user_fio").toString();
     ui->frameOperators->hide();
+    listChange.clear();
 
     infoUser2StatusBar();
     openCentralDB();
@@ -74,7 +77,7 @@ void MainWindow::openCentralDB()
     fbcentral.setPassword(q.value("conn_pass").toString());
 
     if(!fbcentral.open()) {
-        qCritical(logCritical()) << "Не возможно подключится к центральной базе данных." << fbcentral.lastError().text();
+        qCritical(logCritical()) << "Не возможно подключится к центральной базе данных" << fbcentral.lastError().text();
         QMessageBox::critical(0,"Ошибка подключения", QString("Не возможно открыть базу данных!\n%1\nПроверьте настройку подключения.")
                 .arg(fbcentral.lastError().text()),
                 QMessageBox::Ok);
@@ -120,6 +123,7 @@ void MainWindow::on_actionUsers_triggered()
 void MainWindow::on_tableView_doubleClicked(const QModelIndex &idx)
 {
     QString pass;
+    listChange.clear();
     idxTerm = idx;
     azsConn.insert("conName","azs"+modelTerminals->data(modelTerminals->index(idx.row(),0)).toString());
     azsConn.insert("server",modelTerminals->data(modelTerminals->index(idx.row(),3)).toString());
@@ -169,6 +173,7 @@ void MainWindow::finishDBConnect()
         qInfo(logInfo()) << "Подключились к терминалу " << modelTerminals->data(modelTerminals->index(idxTerm.row(),0)).toString();
     } else {
         qInfo(logInfo()) << "Не возможно подключится к терминалу" << modelTerminals->data(modelTerminals->index(idxTerm.row(),0)).toString();
+        return;
     }
     ui->frameOperators->show();
     ui->tableView->hide();
@@ -182,8 +187,8 @@ void MainWindow::finishDBConnect()
 
 void MainWindow::errogConnectInfo(QString str)
 {
-    QMessageBox::critical(0, qApp->tr("Не могу открыть базу данных"),
-                                  QString("Не могу установить соединение с центральной БД!\nПричина: %1\n Проверьте настройки подключения.").arg(str),
+    QMessageBox::critical(this, qApp->tr("Ошибка подключения"),
+                                  QString("Не могу установить соединение с базой данных АЗС!\nПричина: %1\nПроверьте наличие Интеренет подключения к АЗС.").arg(str),
                           QMessageBox::Ok);
 }
 
@@ -304,6 +309,35 @@ void MainWindow::createUIOperarors()
 
 void MainWindow::on_pushButton_clicked()
 {
+    QString strSql, strNote;
+    QStringList list;
     NewOperatorDialog *dlgOper = new NewOperatorDialog();
-    dlgOper->exec();
+    int dialogcode = dlgOper->exec();
+    if(dialogcode == QDialog::Accepted) {
+        insOp = dlgOper->getNewOper();
+        strNote = QString("Добавление оператора Логин: %1, ФИО: %2.")
+                .arg(insOp.at(0))
+                .arg(insOp.at(1));
+        strSql = QString("INSERT INTO operators (login,fio,pswd,isactive) VALUES('%1','%2','%3','T')")
+                    .arg(insOp.at(0))
+                    .arg(insOp.at(1))
+                    .arg(insOp.at(2));
+        list << strNote << strSql;
+        listChange.push_back(list);
+        qDebug() << "Пробуем сохранять" << listChange;
+        return;
+    }
+    if(dialogcode == QDialog::Rejected) {
+        qDebug() << "Ничего не делаем.";
+        return;
+    }
+
+}
+
+
+
+void MainWindow::on_pushButtonApplay_clicked()
+{
+    ApplayDialog *appDlg = new ApplayDialog();
+    appDlg->exec();
 }

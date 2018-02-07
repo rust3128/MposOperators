@@ -15,12 +15,15 @@ class NewOperatorDialog : public QDialog
 public:
     explicit NewOperatorDialog(QWidget *parent = 0);
     ~NewOperatorDialog();
+    QStringList getNewOper();
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
 
 private:
     Ui::NewOperatorDialog *ui;
+    bool veryfiData();
+    QStringList operData;
 };
 
 #endif // NEWOPERATORDIALOG_H

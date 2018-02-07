@@ -11,4 +11,6 @@ struct dataOp {
     };
 Q_DECLARE_METATYPE(dataOp)
 
+
+
 #endif // OPERATORSDATA_H

@@ -61,6 +61,8 @@ private:
     QModelIndex idxTerm;
     dataOp s;
     QVector<dataOp> opVector;
+    QStringList insOp;
+    QVector <QStringList> listChange;
 
 
 };

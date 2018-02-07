@@ -20,6 +20,7 @@ void DBaseConnect::createConnection()
     qRegisterMetaType<vek>("vektor");
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QIBASE",config.value("conName"));
+//    QSqlDatabase db = QSqlDatabase::addDatabase("QIBASE","azs");
     db.setHostName(config.value("server"));
     db.setDatabaseName(config.value("basename"));
     db.setUserName(config.value("login"));
