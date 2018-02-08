@@ -4,11 +4,10 @@
 #include "usersdialog.h"
 #include "dbaseconnect.h"
 #include "newoperatordialog.h"
-#include "applaydialog.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
-#include <QTableWidgetItem>
+
 #include <QCheckBox>
 #include <QHBoxLayout>
 
@@ -268,7 +267,6 @@ void MainWindow::createUIOperarors()
         ui->tableWidget->setItem(i,2,new QTableWidgetItem(opVector.at(i).fio));
         ui->tableWidget->setItem(i,3,new QTableWidgetItem(opVector.at(i).pswd));
 
-
         QWidget *checkBoxActiv = new QWidget();
 //        QCheckBox *checkBox = new QCheckBox();
         QLabel *labelWork = new QLabel();
@@ -277,28 +275,20 @@ void MainWindow::createUIOperarors()
         layoutCheckBox->addWidget(labelWork);
         layoutCheckBox->setContentsMargins(0,0,0,0);
 
-
-
         QString str;
 
         if(opVector.at(i).isactive){
-
             str="<img src=\":/Images/user_accept.png\"> Работает";
             labelWork->setStyleSheet("font-size: 12pt; color: green");
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("1"));
-
-
-
         } else {
             str="<img src=\":/Images/user_removed.png\"> Уволен";
             labelWork->setStyleSheet("font-size: 12pt; color: red");
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("0"));
-
         }
         labelWork->setTextFormat(Qt::RichText);
         labelWork->setText(str);
         ui->tableWidget->setCellWidget(i,5,checkBoxActiv);
-
     }
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->verticalHeader()->hide();
@@ -315,7 +305,7 @@ void MainWindow::on_pushButton_clicked()
     int dialogcode = dlgOper->exec();
     if(dialogcode == QDialog::Accepted) {
         insOp = dlgOper->getNewOper();
-        strNote = QString("Добавление оператора Логин: %1, ФИО: %2.")
+        strNote = QString("Новый оператор Логин: <b>%1</b>, ФИО: <b>%2</b>.")
                 .arg(insOp.at(0))
                 .arg(insOp.at(1));
         strSql = QString("INSERT INTO operators (login,fio,pswd,isactive) VALUES('%1','%2','%3','T')")
@@ -334,10 +324,41 @@ void MainWindow::on_pushButton_clicked()
 
 }
 
-
-
 void MainWindow::on_pushButtonApplay_clicked()
 {
-    ApplayDialog *appDlg = new ApplayDialog();
-    appDlg->exec();
+    if(listChange.isEmpty()){
+        QMessageBox::information(this,"Внимание!","По данной АЗС не производились изменения в справочнике оператора.");
+        return;
+    } else {
+
+        QString messStr = QString("<p><strong>Будут выполнены следующие изменения:</strong></p>"
+                                  "<ol>");
+        for(int i=0;i<listChange.size();++i){
+            messStr+="<li>"+listChange.at(i).at(0)+"</li>";
+        }
+        messStr+="</ol>";
+        QMessageBox msgBox(QMessageBox::Warning,
+                           QString::fromUtf8("Предупреждение"),
+                           messStr,
+                           0, this);
+        msgBox.addButton(QString::fromUtf8("&Применить изменения"),
+                         QMessageBox::AcceptRole);
+        msgBox.addButton(QString::fromUtf8("&Отменить изменения"),
+                         QMessageBox::RejectRole);
+
+        if (msgBox.exec() == QMessageBox::AcceptRole)
+            qDebug() << "Будем сохранять";
+        else
+            qDebug() << "Откатываемся";
+    }
+}
+
+void MainWindow::on_pushButtonActive_clicked()
+{
+
+}
+
+void MainWindow::on_tableWidget_itemClicked(QTableWidgetItem *item)
+{
+    qDebug() << item->row();
 }

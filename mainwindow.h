@@ -8,6 +8,7 @@
 #include <QSqlTableModel>
 #include <QSqlQueryModel>
 #include <QProgressDialog>
+#include <QTableWidgetItem>
 #include <QThread>
 #include "operatorsdata.h"
 
@@ -39,8 +40,12 @@ private slots:
     void getStaus(bool status);
     void getTableOperators(QVector<dataOp> tblOp);
     void filterSet();
-
     void on_pushButton_clicked();
+    void on_pushButtonApplay_clicked();
+
+    void on_pushButtonActive_clicked();
+
+    void on_tableWidget_itemClicked(QTableWidgetItem *item);
 
 private:
     Ui::MainWindow *ui;
