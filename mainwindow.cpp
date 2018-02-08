@@ -360,5 +360,6 @@ void MainWindow::on_pushButtonActive_clicked()
 
 void MainWindow::on_tableWidget_itemClicked(QTableWidgetItem *item)
 {
-    qDebug() << item->row();
+    qDebug() << "Row"<<item->row() << "Меняем. ID:" << opVector.at(item->row()).Id << opVector.at(item->row()).fio;
+
 }
