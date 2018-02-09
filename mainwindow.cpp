@@ -35,6 +35,8 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     connect(ui->radioButtonAll,SIGNAL(clicked()),this,SLOT(filterSet()));
     connect(ui->radioButtonRemove,SIGNAL(clicked()),this,SLOT(filterSet()));
 
+    ui->tableWidget->setIconSize(QSize(64,64));
+
 }
 
 MainWindow::~MainWindow()
@@ -244,6 +246,13 @@ void MainWindow::createUIOperarors()
 {
 
 
+
+
+
+    QIcon icoWork = QIcon(":/Images/user_accept.png");
+    QIcon icoDel = QIcon(":/Images/user_delete.png");
+//    this->setIconSize(QSize(32,32));
+
     QStringList headers = QStringList() << "ID" << "Логин" << "ФИО" << "Пароль" << "work" <<"Статус";
 
     ui->tableWidget->setColumnCount(6);
@@ -267,28 +276,30 @@ void MainWindow::createUIOperarors()
         ui->tableWidget->setItem(i,2,new QTableWidgetItem(opVector.at(i).fio));
         ui->tableWidget->setItem(i,3,new QTableWidgetItem(opVector.at(i).pswd));
 
-        QWidget *checkBoxActiv = new QWidget();
-//        QCheckBox *checkBox = new QCheckBox();
-        QLabel *labelWork = new QLabel();
+//        QWidget *checkBoxActiv = new QWidget();
+////        QCheckBox *checkBox = new QCheckBox();
+//        QLabel *labelWork = new QLabel();
 
-        QHBoxLayout *layoutCheckBox = new QHBoxLayout(checkBoxActiv);
-        layoutCheckBox->addWidget(labelWork);
-        layoutCheckBox->setContentsMargins(0,0,0,0);
+//        QHBoxLayout *layoutCheckBox = new QHBoxLayout(checkBoxActiv);
+//        layoutCheckBox->addWidget(labelWork);
+//        layoutCheckBox->setContentsMargins(0,0,0,0);
 
-        QString str;
+//        QString str;
 
         if(opVector.at(i).isactive){
-            str="<img src=\":/Images/user_accept.png\"> Работает";
-            labelWork->setStyleSheet("font-size: 12pt; color: green");
+//            str="<img src=\":/Images/user_accept.png\"> Работает";
+//            labelWork->setStyleSheet("font-size: 12pt; color: green");
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("1"));
+            ui->tableWidget->setItem(i,5,new QTableWidgetItem(icoWork,"Работает",1));
         } else {
-            str="<img src=\":/Images/user_removed.png\"> Уволен";
-            labelWork->setStyleSheet("font-size: 12pt; color: red");
+//            str="<img src=\":/Images/user_removed.png\"> Уволен";
+//            labelWork->setStyleSheet("font-size: 12pt; color: red");
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("0"));
+            ui->tableWidget->setItem(i,5,new QTableWidgetItem(icoDel,"Уволен",1));
         }
-        labelWork->setTextFormat(Qt::RichText);
-        labelWork->setText(str);
-        ui->tableWidget->setCellWidget(i,5,checkBoxActiv);
+//        labelWork->setTextFormat(Qt::RichText);
+//        labelWork->setText(str);
+//        ui->tableWidget->setCellWidget(i,5,checkBoxActiv);
     }
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->verticalHeader()->hide();

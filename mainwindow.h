@@ -70,6 +70,7 @@ private:
     QVector <QStringList> listChange;
 
 
+
 };
 
 #endif // MAINWINDOW_H
