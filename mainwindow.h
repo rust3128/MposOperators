@@ -69,6 +69,7 @@ private:
     QIcon icoWork = QIcon(":/Images/user_accept.png");
     QIcon icoDel = QIcon(":/Images/user_delete.png");
     QTableWidgetItem *item; //Текущий пользователь.
+    QTableWidgetItem *itemTrue, *itemFalse;
 
 };
 
