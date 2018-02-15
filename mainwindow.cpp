@@ -35,7 +35,8 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     connect(ui->radioButtonAll,SIGNAL(clicked()),this,SLOT(filterSet()));
     connect(ui->radioButtonRemove,SIGNAL(clicked()),this,SLOT(filterSet()));
 
-    ui->tableWidget->setIconSize(QSize(64,64));
+    ui->tableWidget->setIconSize(QSize(32,32));
+    ui->pushButtonActive->setIconSize(QSize(32,32));
 
 }
 
@@ -208,7 +209,9 @@ void MainWindow::getTableOperators(QVector<dataOp> tblOp)
 
 void MainWindow::filterSet()
 {
-    bool match;
+    bool match, isSelected=false;
+    int firsrRow = 0;
+
     if (ui->radioButtonAll->isChecked()){
         for(int i=0; i < ui->tableWidget->rowCount(); ++i){
            ui->tableWidget->setRowHidden(i,false);
@@ -223,8 +226,12 @@ void MainWindow::filterSet()
             {
                 match = true;
             }
-
             ui->tableWidget->setRowHidden( i, !match );
+            if(match && !isSelected){
+                firsrRow=i;
+                isSelected=true;
+
+            }
         }
 
     } else if (ui->radioButtonRemove) {
@@ -236,22 +243,21 @@ void MainWindow::filterSet()
             {
                 match = true;
             }
-
             ui->tableWidget->setRowHidden( i, !match );
+            if(match && !isSelected){
+                firsrRow=i;
+                isSelected=true;
+            }
         }
     }
+    ui->tableWidget->selectRow(firsrRow);
+
+
 }
 
 void MainWindow::createUIOperarors()
 {
 
-
-
-
-
-    QIcon icoWork = QIcon(":/Images/user_accept.png");
-    QIcon icoDel = QIcon(":/Images/user_delete.png");
-//    this->setIconSize(QSize(32,32));
 
     QStringList headers = QStringList() << "ID" << "Логин" << "ФИО" << "Пароль" << "work" <<"Статус";
 
@@ -276,30 +282,14 @@ void MainWindow::createUIOperarors()
         ui->tableWidget->setItem(i,2,new QTableWidgetItem(opVector.at(i).fio));
         ui->tableWidget->setItem(i,3,new QTableWidgetItem(opVector.at(i).pswd));
 
-//        QWidget *checkBoxActiv = new QWidget();
-////        QCheckBox *checkBox = new QCheckBox();
-//        QLabel *labelWork = new QLabel();
-
-//        QHBoxLayout *layoutCheckBox = new QHBoxLayout(checkBoxActiv);
-//        layoutCheckBox->addWidget(labelWork);
-//        layoutCheckBox->setContentsMargins(0,0,0,0);
-
-//        QString str;
-
         if(opVector.at(i).isactive){
-//            str="<img src=\":/Images/user_accept.png\"> Работает";
-//            labelWork->setStyleSheet("font-size: 12pt; color: green");
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("1"));
             ui->tableWidget->setItem(i,5,new QTableWidgetItem(icoWork,"Работает",1));
         } else {
-//            str="<img src=\":/Images/user_removed.png\"> Уволен";
-//            labelWork->setStyleSheet("font-size: 12pt; color: red");
+
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("0"));
             ui->tableWidget->setItem(i,5,new QTableWidgetItem(icoDel,"Уволен",1));
         }
-//        labelWork->setTextFormat(Qt::RichText);
-//        labelWork->setText(str);
-//        ui->tableWidget->setCellWidget(i,5,checkBoxActiv);
     }
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->verticalHeader()->hide();
@@ -325,6 +315,24 @@ void MainWindow::on_pushButton_clicked()
                     .arg(insOp.at(2));
         list << strNote << strSql;
         listChange.push_back(list);
+        //Добавляем запись в Виджет
+        int rowNew = ui->tableWidget->rowCount();
+        ui->tableWidget->insertRow(rowNew);
+
+//        ui->tableWidget->setItem(i,0,new QTableWidgetItem(opVector.at(i).Id));
+        ui->tableWidget->setItem(rowNew,1,new QTableWidgetItem(insOp.at(0)));
+        ui->tableWidget->setItem(rowNew,2,new QTableWidgetItem(insOp.at(1)));
+        ui->tableWidget->setItem(rowNew,3,new QTableWidgetItem(insOp.at(2)));
+        ui->tableWidget->setItem(rowNew,4,new QTableWidgetItem("1"));
+        ui->tableWidget->setItem(rowNew,5,new QTableWidgetItem(icoWork,"Работает",1));
+
+        ui->tableWidget->item(item->row(),1)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),2)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),3)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),5)->setBackground(Qt::red);
+
+        filterSet();
+
         qDebug() << "Пробуем сохранять" << listChange;
         return;
     }
@@ -367,10 +375,55 @@ void MainWindow::on_pushButtonApplay_clicked()
 void MainWindow::on_pushButtonActive_clicked()
 {
 
+    if(item->row() >= opVector.size()){
+        QMessageBox::information(this,"Внимание","Данные о сотруднике еще не внесены в базу данных АЗС.<br>Увольнение не возможно.");
+        return;
+    }
+    QString strSQL, strNote;
+    QStringList list;
+
+    if(ui->tableWidget->item(item->row(),4)->text().toInt()==1){
+        strNote = QString("Увольнение оператора.<br>Логин: <b>%1</b>, ФИО: <b>%2</b>.")
+                .arg(opVector.at(item->row()).login)
+                .arg(opVector.at(item->row()).fio);
+        strSQL = QString("UPDATE operators SET isactive='F' WHERE operator_id=%1")
+                .arg(opVector.at(item->row()).Id);
+        ui->tableWidget->setItem(item->row(),5,new QTableWidgetItem(icoDel,"Уволен",1));
+        ui->tableWidget->setItem(item->row(),4,new QTableWidgetItem("0"));
+        ui->tableWidget->item(item->row(),1)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),2)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),3)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),5)->setBackground(Qt::red);
+    } else {
+        strNote = QString("Активация оператора.<br>Логин: <b>%1</b>, ФИО: <b>%2</b>.")
+                .arg(opVector.at(item->row()).login)
+                .arg(opVector.at(item->row()).fio);
+        strSQL = QString("UPDATE operators SET isactive='T' WHERE operator_id=%1")
+                .arg(opVector.at(item->row()).Id);
+        ui->tableWidget->setItem(item->row(),4,new QTableWidgetItem("1"));
+        ui->tableWidget->setItem(item->row(),5,new QTableWidgetItem(icoWork,"Работает",1));
+        ui->tableWidget->item(item->row(),1)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),2)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),3)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),5)->setBackground(Qt::red);
+    }
+    list << strNote << strSQL;
+    listChange.push_back(list);
 }
 
-void MainWindow::on_tableWidget_itemClicked(QTableWidgetItem *item)
-{
-    qDebug() << "Row"<<item->row() << "Меняем. ID:" << opVector.at(item->row()).Id << opVector.at(item->row()).fio;
 
+void MainWindow::on_tableWidget_itemSelectionChanged()
+{
+    item = ui->tableWidget->currentItem();
+    if(item->row() >= opVector.size()){
+        return;
+    }
+    qDebug() << "Row"<<item->row() << "Меняем. ID:" << opVector.at(item->row()).Id << opVector.at(item->row()).fio;
+    if(opVector.at(item->row()).isactive) {
+        ui->pushButtonActive->setText("Уволить");
+        ui->pushButtonActive->setIcon(icoDel);
+    } else {
+        ui->pushButtonActive->setText("Принять");
+        ui->pushButtonActive->setIcon(icoWork);
+    }
 }

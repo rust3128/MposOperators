@@ -42,10 +42,8 @@ private slots:
     void filterSet();
     void on_pushButton_clicked();
     void on_pushButtonApplay_clicked();
-
     void on_pushButtonActive_clicked();
-
-    void on_tableWidget_itemClicked(QTableWidgetItem *item);
+    void on_tableWidget_itemSelectionChanged();
 
 private:
     Ui::MainWindow *ui;
@@ -68,8 +66,9 @@ private:
     QVector<dataOp> opVector;
     QStringList insOp;
     QVector <QStringList> listChange;
-
-
+    QIcon icoWork = QIcon(":/Images/user_accept.png");
+    QIcon icoDel = QIcon(":/Images/user_delete.png");
+    QTableWidgetItem *item; //Текущий пользователь.
 
 };
 
