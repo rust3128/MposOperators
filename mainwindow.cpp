@@ -20,9 +20,6 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     ui->frameOperators->hide();
     listChange.clear();
 
-    itemTrue = new QTableWidgetItem("1");
-    itemFalse =new QTableWidgetItem("0");
-
     infoUser2StatusBar();
     openCentralDB();
     setupTerminalModel();
@@ -198,9 +195,6 @@ void MainWindow::getStaus(bool status)
 void MainWindow::getTableOperators(QVector<dataOp> tblOp)
 {
     opVector = tblOp;
-    qDebug() << opVector.size();
-
-
 }
 
 void MainWindow::filterSet()
@@ -270,7 +264,7 @@ void MainWindow::createUIOperarors()
 //    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
     // Скрываем колонку под номером 0
     ui->tableWidget->hideColumn(0);
-//    ui->tableWidget->hideColumn(4);
+    ui->tableWidget->hideColumn(4);
     for(int i=0;i<opVector.size();++i){
         ui->tableWidget->insertRow(i);
         ui->tableWidget->setItem(i,0,new QTableWidgetItem(opVector.at(i).Id));
@@ -363,8 +357,10 @@ void MainWindow::on_pushButtonApplay_clicked()
 
         if (msgBox.exec() == QMessageBox::AcceptRole)
             qDebug() << "Будем сохранять";
-        else
+        else {
             qDebug() << "Откатываемся";
+            listChange.clear();
+        }
     }
 }
 
@@ -377,33 +373,28 @@ void MainWindow::on_pushButtonActive_clicked()
     }
     QString strSQL, strNote;
     QStringList list;
-    qDebug() << "Item Row Push button Activate" << item->row();
-    if(ui->tableWidget->item(item->row(),4)->text().toInt()==1){
+    if(ui->pushButtonActive->text()=="Уволить"){
         strNote = QString("Увольнение оператора.<br>Логин: <b>%1</b>, ФИО: <b>%2</b>.")
-                .arg(opVector.at(item->row()).login)
-                .arg(opVector.at(item->row()).fio);
+                        .arg(opVector.at(item->row()).login)
+                        .arg(opVector.at(item->row()).fio);
         strSQL = QString("UPDATE operators SET isactive='F' WHERE operator_id=%1")
-                .arg(opVector.at(item->row()).Id);
-        ui->tableWidget->setItem(item->row(),5,new QTableWidgetItem(icoDel,"Уволен",1));
-        ui->tableWidget->setItem(item->row(),4,itemFalse);
-        ui->tableWidget->item(item->row(),4)->setText("0");
-//        ui->tableWidget->item(item->row(),1)->setBackground(Qt::red);
-//        ui->tableWidget->item(item->row(),2)->setBackground(Qt::red);
-//        ui->tableWidget->item(item->row(),3)->setBackground(Qt::red);
-//        ui->tableWidget->item(item->row(),5)->setBackground(Qt::red);
+                        .arg(opVector.at(item->row()).Id);
+        ui->tableWidget->item(item->row(),1)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),2)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),3)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),5)->setBackground(Qt::red);
     } else {
         strNote = QString("Активация оператора.<br>Логин: <b>%1</b>, ФИО: <b>%2</b>.")
-                .arg(opVector.at(item->row()).login)
-                .arg(opVector.at(item->row()).fio);
+                        .arg(opVector.at(item->row()).login)
+                        .arg(opVector.at(item->row()).fio);
         strSQL = QString("UPDATE operators SET isactive='T' WHERE operator_id=%1")
-                .arg(opVector.at(item->row()).Id);
-        ui->tableWidget->item(item->row(),4)->setText("1");
-        ui->tableWidget->setItem(item->row(),5,new QTableWidgetItem(icoWork,"Работает",1));
-//        ui->tableWidget->item(item->row(),1)->setBackground(Qt::red);
-//        ui->tableWidget->item(item->row(),2)->setBackground(Qt::red);
-//        ui->tableWidget->item(item->row(),3)->setBackground(Qt::red);
-//        ui->tableWidget->item(item->row(),5)->setBackground(Qt::red);
+                        .arg(opVector.at(item->row()).Id);
+        ui->tableWidget->item(item->row(),1)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),2)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),3)->setBackground(Qt::red);
+        ui->tableWidget->item(item->row(),5)->setBackground(Qt::red);
     }
+
     list << strNote << strSQL;
     listChange.push_back(list);
 }
@@ -415,8 +406,15 @@ void MainWindow::on_tableWidget_itemSelectionChanged()
     if(item->row() >= opVector.size()){
         return;
     }
+    if(item->backgroundColor() == Qt::red){
+        ui->pushButtonActive->setDisabled(true);
+        return;
+    } else {
+        ui->pushButtonActive->setDisabled(false);
+    }
+
     qDebug() << "Row"<<item->row() << "Меняем. ID:" << opVector.at(item->row()).Id << opVector.at(item->row()).fio;
-    if(ui->tableWidget->item(item->row(),4)->text().toInt()==1) {
+    if(opVector.at(item->row()).isactive) {
         ui->pushButtonActive->setText("Уволить");
         ui->pushButtonActive->setIcon(icoDel);
     } else {
