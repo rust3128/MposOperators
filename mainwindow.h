@@ -10,6 +10,8 @@
 #include <QProgressDialog>
 #include <QTableWidgetItem>
 #include <QThread>
+#include <QObject>
+
 #include "operatorsdata.h"
 
 
@@ -18,6 +20,8 @@ struct userdata
     int id;
     QString fio;
 };
+
+    typedef  QVector<QStringList> sqlList;
 
 namespace Ui {
 class MainWindow;
@@ -31,6 +35,10 @@ public:
     explicit MainWindow(QSqlRecord user, QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+    void sendConnName(QString);     //Передаем имя соедиения
+    void sendChangeList(QVector<QStringList>);
+
 private slots:
     void on_actionUsers_triggered();
     void on_tableView_doubleClicked(const QModelIndex &idx);
@@ -39,6 +47,7 @@ private slots:
     void errogConnectInfo(QString str);
     void getStaus(bool status);
     void getTableOperators(QVector<dataOp> tblOp);
+    void transacionStart();     //Начинаем транзакции
     void filterSet();
     void on_pushButton_clicked();
     void on_pushButtonApplay_clicked();
@@ -50,17 +59,10 @@ private:
     userdata currentUser;
     QLabel *labelUser;
     QSqlQueryModel *modelTerminals;
-private:
-    void closeEvent(QCloseEvent *event);
-    void infoUser2StatusBar();
-    void openCentralDB(void);
-    void createUI();
-    void setupTerminalModel();
-    void createUIOperarors();
     QMap<QString, QString> azsConn;
     QProgressDialog *progress;
     bool isConnected;
-    QThread *thread;
+    QThread *thread, *modify;
     QModelIndex idxTerm;
     dataOp s;
     QVector<dataOp> opVector;
@@ -69,8 +71,14 @@ private:
     QIcon icoWork = QIcon(":/Images/user_accept.png");
     QIcon icoDel = QIcon(":/Images/user_delete.png");
     QTableWidgetItem *item; //Текущий пользователь.
-    QTableWidgetItem *itemTrue, *itemFalse;
-
+private:
+    void closeEvent(QCloseEvent *event);
+    void infoUser2StatusBar();
+    void openCentralDB(void);
+    void createUI();
+    void setupTerminalModel();
+    void createUIOperarors();
+    void applayAzs();
 };
 
 #endif // MAINWINDOW_H

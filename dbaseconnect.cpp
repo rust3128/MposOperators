@@ -17,7 +17,7 @@ void DBaseConnect::createConnection()
     dataOp s;
     typedef QVector<dataOp> vek;
 //    qRegisterMetaType<dataOp>("dataOp");
-    qRegisterMetaType<vek>("vektor");
+   qRegisterMetaType<vek>("vektor");
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QIBASE",config.value("conName"));
 //    QSqlDatabase db = QSqlDatabase::addDatabase("QIBASE","azs");

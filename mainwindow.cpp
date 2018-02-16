@@ -4,10 +4,17 @@
 #include "usersdialog.h"
 #include "dbaseconnect.h"
 #include "newoperatordialog.h"
+#include "operatorchanged.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
-#include <QMessageBox>
+#include <QMetaType>
+
+
+
+
+
+
 
 MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     QMainWindow(parent),
@@ -62,7 +69,7 @@ void MainWindow::openCentralDB()
     QSqlDatabase dblite = QSqlDatabase::database("lite");
     QSqlDatabase fbcentral = QSqlDatabase::addDatabase("QIBASE","central");
     QSqlQuery q = QSqlQuery(dblite);
-    QString strSQL = "SELECT * FROM connections WHERE conn_id=2";
+    QString strSQL = "SELECT * FROM connections WHERE conn_id=3";
     q.exec(strSQL);
     q.next();
 
@@ -197,6 +204,8 @@ void MainWindow::getTableOperators(QVector<dataOp> tblOp)
     opVector = tblOp;
 }
 
+
+
 void MainWindow::filterSet()
 {
     bool match, isSelected=false;
@@ -288,6 +297,7 @@ void MainWindow::createUIOperarors()
     filterSet();
 }
 
+
 void MainWindow::on_pushButton_clicked()
 {
     QString strSql, strNote;
@@ -323,7 +333,7 @@ void MainWindow::on_pushButton_clicked()
 
         filterSet();
 
-        qDebug() << "Пробуем сохранять" << listChange;
+//        qDebug() << "Пробуем сохранять" << listChange;
         return;
     }
     if(dialogcode == QDialog::Rejected) {
@@ -355,8 +365,10 @@ void MainWindow::on_pushButtonApplay_clicked()
         msgBox.addButton(QString::fromUtf8("&Отменить изменения"),
                          QMessageBox::RejectRole);
 
-        if (msgBox.exec() == QMessageBox::AcceptRole)
+        if (msgBox.exec() == QMessageBox::AcceptRole){
             qDebug() << "Будем сохранять";
+            applayAzs();
+        }
         else {
             qDebug() << "Откатываемся";
             listChange.clear();
@@ -421,4 +433,37 @@ void MainWindow::on_tableWidget_itemSelectionChanged()
         ui->pushButtonActive->setText("Принять");
         ui->pushButtonActive->setIcon(icoWork);
     }
+}
+
+void MainWindow::applayAzs()
+{
+    OperatorChanged *opCh = new OperatorChanged();
+    modify = new QThread;
+    qRegisterMetaType<sqlList>("qslList");
+
+    progress = new QProgressDialog();
+    progress->setWindowModality(Qt::WindowModal);
+    progress->setLabelText("Выполнение изменений в базе данных АЗС\n"+ui->labelAzsTitle->text());
+    progress->setCancelButton(0);
+    progress->setRange(0,0);
+    progress->setMinimumDuration(0);
+
+    connect(modify,SIGNAL(started()),this,SLOT(transacionStart()));
+    connect(modify,SIGNAL(started()),opCh,SLOT(sqlExecute()));
+
+
+    connect(this,SIGNAL(sendConnName(QString)),opCh,SLOT(getConnName(QString)),Qt::DirectConnection);
+    connect(this,SIGNAL(sendChangeList(QVector<QStringList>)),opCh,SLOT(getListSql(QVector<QStringList>)),Qt::DirectConnection);
+
+    emit sendConnName(azsConn.value("conName"));
+    emit sendChangeList(listChange);
+
+    modify->start();
+    opCh->moveToThread(modify);
+}
+
+void MainWindow::transacionStart()
+{
+    progress->show();
+
 }
