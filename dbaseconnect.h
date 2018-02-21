@@ -18,6 +18,7 @@ signals:
     void fin();
     void sendStatus(bool);
     void sendOperators(QVector<dataOp>);
+    void sendCurrentOperators(int);
 
 public slots:
     void createConnection();

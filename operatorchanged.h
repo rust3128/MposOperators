@@ -12,6 +12,8 @@ public:
     explicit OperatorChanged(QObject *parent = nullptr);
 
 signals:
+    void finish();
+
 
 public slots:
     void getConnName(QString str);

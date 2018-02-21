@@ -25,7 +25,9 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     currentUser.id=user.value("user_id").toInt();
     currentUser.fio=user.value("user_fio").toString();
     ui->frameOperators->hide();
+    ui->labelMessageWork->hide();
     listChange.clear();
+
 
     infoUser2StatusBar();
     openCentralDB();
@@ -37,6 +39,7 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
 
     ui->tableWidget->setIconSize(QSize(32,32));
     ui->pushButtonActive->setIconSize(QSize(32,32));
+    enabledApplay();
 
 }
 
@@ -126,6 +129,8 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &idx)
 {
     QString pass;
     listChange.clear();
+    ui->tableWidget->clear();
+    opVector.clear();
     idxTerm = idx;
     azsConn.insert("conName","azs"+modelTerminals->data(modelTerminals->index(idx.row(),0)).toString());
     azsConn.insert("server",modelTerminals->data(modelTerminals->index(idx.row(),3)).toString());
@@ -155,8 +160,9 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &idx)
 
     connect(dbConn,SIGNAL(fin()),thread,SLOT(terminate()),Qt::DirectConnection);
     connect(dbConn,SIGNAL(sendOperators(QVector<dataOp>)),this,SLOT(getTableOperators(QVector<dataOp>)),Qt::DirectConnection);
-    connect(dbConn,SIGNAL(sendStatus(bool)),this,SLOT(getStaus(bool)));
-    connect(dbConn,SIGNAL(connectionError(QString)),this,SLOT(errogConnectInfo(QString)));
+    connect(dbConn,&DBaseConnect::sendCurrentOperators,this,&MainWindow::getCurrentOperators,Qt::DirectConnection);
+    connect(dbConn,SIGNAL(sendStatus(bool)),this,SLOT(getStaus(bool)),Qt::DirectConnection);
+    connect(dbConn,SIGNAL(connectionError(QString)),this,SLOT(errogConnectInfo(QString)),Qt::DirectConnection);
 
     thread->start();
     dbConn->moveToThread(thread);
@@ -204,13 +210,18 @@ void MainWindow::getTableOperators(QVector<dataOp> tblOp)
     opVector = tblOp;
 }
 
+void MainWindow::getCurrentOperators(int curID)
+{
+    currentOperator=curID;
+}
+
 
 
 void MainWindow::filterSet()
 {
     bool match, isSelected=false;
     int firsrRow = 0;
-
+    qDebug() << "RouCount" << ui->tableWidget->rowCount();
     if (ui->radioButtonAll->isChecked()){
         for(int i=0; i < ui->tableWidget->rowCount(); ++i){
            ui->tableWidget->setRowHidden(i,false);
@@ -334,10 +345,12 @@ void MainWindow::on_pushButton_clicked()
         filterSet();
 
 //        qDebug() << "Пробуем сохранять" << listChange;
+        enabledApplay();
         return;
     }
     if(dialogcode == QDialog::Rejected) {
         qDebug() << "Ничего не делаем.";
+        enabledApplay();
         return;
     }
 
@@ -345,11 +358,6 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_pushButtonApplay_clicked()
 {
-    if(listChange.isEmpty()){
-        QMessageBox::information(this,"Внимание!","По данной АЗС не производились изменения в справочнике оператора.");
-        return;
-    } else {
-
         QString messStr = QString("<p><strong>Будут выполнены следующие изменения:</strong></p>"
                                   "<ol>");
         for(int i=0;i<listChange.size();++i){
@@ -373,7 +381,7 @@ void MainWindow::on_pushButtonApplay_clicked()
             qDebug() << "Откатываемся";
             listChange.clear();
         }
-    }
+
 }
 
 void MainWindow::on_pushButtonActive_clicked()
@@ -409,6 +417,8 @@ void MainWindow::on_pushButtonActive_clicked()
 
     list << strNote << strSQL;
     listChange.push_back(list);
+    ui->pushButtonActive->setDisabled(true);
+    enabledApplay();
 }
 
 
@@ -424,6 +434,15 @@ void MainWindow::on_tableWidget_itemSelectionChanged()
     } else {
         ui->pushButtonActive->setDisabled(false);
     }
+    ui->labelMessageWork->hide();
+
+    if(opVector.at(item->row()).Id == currentOperator){
+        ui->labelMessageWork->show();
+        ui->labelMessageWork->setText("Оператор "+opVector.at(item->row()).fio+" работает в текущей смене. Измененния не возможны!");
+        ui->pushButtonActive->setDisabled(true);
+        return;
+    }
+    ui->pushButtonActive->setDisabled(false);
 
     qDebug() << "Row"<<item->row() << "Меняем. ID:" << opVector.at(item->row()).Id << opVector.at(item->row()).fio;
     if(opVector.at(item->row()).isactive) {
@@ -448,12 +467,14 @@ void MainWindow::applayAzs()
     progress->setRange(0,0);
     progress->setMinimumDuration(0);
 
-    connect(modify,SIGNAL(started()),this,SLOT(transacionStart()));
-    connect(modify,SIGNAL(started()),opCh,SLOT(sqlExecute()));
+    connect(modify,&QThread::started,this,&MainWindow::transacionStart);
+    connect(modify,&QThread::started,opCh,&OperatorChanged::sqlExecute);
+    connect(modify,&QThread::finished,this,&MainWindow::finishChange);
 
+    connect(this,&MainWindow::sendConnName,opCh,&OperatorChanged::getConnName,Qt::DirectConnection);
+    connect(this,&MainWindow::sendChangeList,opCh,&OperatorChanged::getListSql,Qt::DirectConnection);
 
-    connect(this,SIGNAL(sendConnName(QString)),opCh,SLOT(getConnName(QString)),Qt::DirectConnection);
-    connect(this,SIGNAL(sendChangeList(QVector<QStringList>)),opCh,SLOT(getListSql(QVector<QStringList>)),Qt::DirectConnection);
+    connect(opCh,&OperatorChanged::finish,modify,&QThread::terminate,Qt::DirectConnection);
 
     emit sendConnName(azsConn.value("conName"));
     emit sendChangeList(listChange);
@@ -462,8 +483,48 @@ void MainWindow::applayAzs()
     opCh->moveToThread(modify);
 }
 
+
 void MainWindow::transacionStart()
 {
     progress->show();
 
+}
+
+void MainWindow::finishChange()
+{
+    progress->cancel();
+
+//    ui->tableWidget->clearSelection();
+
+//    // Disconnect all signals from table widget ! important !
+//    ui->tableWidget->disconnect();
+
+    // Remove all items
+    ui->tableWidget->clearContents();
+
+    // Set row count to 0 (remove rows)
+    ui->tableWidget->setRowCount(0);
+
+    ui->frameOperators->hide();
+    ui->tableView->show();
+    ui->labelSelect->show();
+
+
+
+    listChange.clear();
+
+}
+
+void MainWindow::on_pushButtonOtherAzs_clicked()
+{
+
+}
+
+void MainWindow::enabledApplay()
+{
+    if(listChange.size()>0) {
+        ui->pushButtonApplay->setEnabled(true);
+    } else {
+        ui->pushButtonApplay->setEnabled(false);
+    }
 }

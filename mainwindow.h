@@ -47,12 +47,16 @@ private slots:
     void errogConnectInfo(QString str);
     void getStaus(bool status);
     void getTableOperators(QVector<dataOp> tblOp);
+    void getCurrentOperators(int curID);
     void transacionStart();     //Начинаем транзакции
+    void finishChange();
     void filterSet();
     void on_pushButton_clicked();
     void on_pushButtonApplay_clicked();
     void on_pushButtonActive_clicked();
     void on_tableWidget_itemSelectionChanged();
+
+    void on_pushButtonOtherAzs_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -70,7 +74,8 @@ private:
     QVector <QStringList> listChange;
     QIcon icoWork = QIcon(":/Images/user_accept.png");
     QIcon icoDel = QIcon(":/Images/user_delete.png");
-    QTableWidgetItem *item; //Текущий пользователь.
+    QTableWidgetItem *item; //Текущий оператора.
+    int currentOperator;    //ID оператора на АЗС на котолрого открыта смена.
 private:
     void closeEvent(QCloseEvent *event);
     void infoUser2StatusBar();
@@ -79,6 +84,7 @@ private:
     void setupTerminalModel();
     void createUIOperarors();
     void applayAzs();
+    void enabledApplay();
 };
 
 #endif // MAINWINDOW_H

@@ -29,11 +29,13 @@ void OperatorChanged::sqlExecute()
 
     QSqlDatabase dbazs = QSqlDatabase::database(connName);
     QSqlQuery q = QSqlQuery(dbazs);
-    for(int i; i<listSql.size();++i){
+    for(int i=0; i<listSql.size();++i){
 //        qDebug() << "Comment SQL: " << listSql.at(i).at(0);
 //        qDebug() << "Text SQL: " << listSql.at(i).at(1);
         q.prepare(listSql.at(i).at(1));
         if(!q.exec()) qDebug() << q.lastError().text();
 //        qDebug() << q.executedQuery();
     }
+    q.exec("commit");
+    emit finish();
 }

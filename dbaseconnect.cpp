@@ -50,6 +50,9 @@ void DBaseConnect::createConnection()
             gVector.push_back(s);
         }
         emit sendOperators(gVector);
+        q.exec("SELECT a.operator_id FROM shifts a WHERE a.shift_id = (SELECT MAX(t.shift_id) FROM shifts t)");
+        q.next();
+        emit sendCurrentOperators(q.value(0).toInt());
     }
     emit sendStatus(statusConnect);
     emit fin();
