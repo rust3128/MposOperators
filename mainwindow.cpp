@@ -10,12 +10,6 @@
 #include <QMessageBox>
 #include <QMetaType>
 
-
-
-
-
-
-
 MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -69,10 +63,17 @@ void MainWindow::infoUser2StatusBar()
 
 void MainWindow::openCentralDB()
 {
+    int currIdConn;
     QSqlDatabase dblite = QSqlDatabase::database("lite");
     QSqlDatabase fbcentral = QSqlDatabase::addDatabase("QIBASE","central");
     QSqlQuery q = QSqlQuery(dblite);
-    QString strSQL = "SELECT * FROM connections WHERE conn_id=3";
+
+    QString strSQL = "SELECT currentID FROM usedconn";
+    q.exec();
+    q.next();
+    currIdConn=q.value(0).toInt();
+
+    strSQL = "SELECT * FROM connections WHERE conn_id=3";
     q.exec(strSQL);
     q.next();
 
@@ -111,10 +112,7 @@ void MainWindow::setupTerminalModel()
     ui->tableView->verticalHeader()->hide();
     ui->tableView->resizeColumnsToContents();
     ui->tableView->verticalHeader()->setDefaultSectionSize(ui->tableView->verticalHeader()->minimumSectionSize());
-
-
 }
-
 
 
 void MainWindow::on_actionUsers_triggered()
@@ -190,7 +188,6 @@ void MainWindow::finishDBConnect()
     ui->labelAzsTitle->setText("АЗС "+modelTerminals->data(modelTerminals->index(idxTerm.row(),0)).toString()
                                +"\n"+modelTerminals->data(modelTerminals->index(idxTerm.row(),1)).toString());
     createUIOperarors();
-
 }
 
 void MainWindow::errogConnectInfo(QString str)
@@ -221,7 +218,6 @@ void MainWindow::filterSet()
 {
     bool match, isSelected=false;
     int firsrRow = 0;
-    qDebug() << "RouCount" << ui->tableWidget->rowCount();
     if (ui->radioButtonAll->isChecked()){
         for(int i=0; i < ui->tableWidget->rowCount(); ++i){
            ui->tableWidget->setRowHidden(i,false);
@@ -240,7 +236,6 @@ void MainWindow::filterSet()
             if(match && !isSelected){
                 firsrRow=i;
                 isSelected=true;
-
             }
         }
 
@@ -300,6 +295,12 @@ void MainWindow::createUIOperarors()
             ui->tableWidget->setItem(i,4,new QTableWidgetItem("0"));
             ui->tableWidget->setItem(i,5,new QTableWidgetItem(icoDel,"Уволен",1));
         }
+        if(opVector.at(i).Id==currentOperator){
+            ui->tableWidget->item(i,1)->setBackground(Qt::green);
+            ui->tableWidget->item(i,2)->setBackground(Qt::green);
+            ui->tableWidget->item(i,3)->setBackground(Qt::green);
+            ui->tableWidget->item(i,5)->setBackground(Qt::green);
+        }
     }
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->verticalHeader()->hide();
@@ -307,7 +308,6 @@ void MainWindow::createUIOperarors()
     ui->radioButtonActive->setChecked(true);
     filterSet();
 }
-
 
 void MainWindow::on_pushButton_clicked()
 {
@@ -349,7 +349,6 @@ void MainWindow::on_pushButton_clicked()
         return;
     }
     if(dialogcode == QDialog::Rejected) {
-        qDebug() << "Ничего не делаем.";
         enabledApplay();
         return;
     }
@@ -374,11 +373,9 @@ void MainWindow::on_pushButtonApplay_clicked()
                          QMessageBox::RejectRole);
 
         if (msgBox.exec() == QMessageBox::AcceptRole){
-            qDebug() << "Будем сохранять";
             applayAzs();
         }
         else {
-            qDebug() << "Откатываемся";
             listChange.clear();
         }
 
@@ -444,7 +441,7 @@ void MainWindow::on_tableWidget_itemSelectionChanged()
     }
     ui->pushButtonActive->setDisabled(false);
 
-    qDebug() << "Row"<<item->row() << "Меняем. ID:" << opVector.at(item->row()).Id << opVector.at(item->row()).fio;
+//    qDebug() << "Row"<<item->row() << "Меняем. ID:" << opVector.at(item->row()).Id << opVector.at(item->row()).fio;
     if(opVector.at(item->row()).isactive) {
         ui->pushButtonActive->setText("Уволить");
         ui->pushButtonActive->setIcon(icoDel);
@@ -483,7 +480,6 @@ void MainWindow::applayAzs()
     opCh->moveToThread(modify);
 }
 
-
 void MainWindow::transacionStart()
 {
     progress->show();
@@ -493,31 +489,39 @@ void MainWindow::transacionStart()
 void MainWindow::finishChange()
 {
     progress->cancel();
-
-//    ui->tableWidget->clearSelection();
-
-//    // Disconnect all signals from table widget ! important !
-//    ui->tableWidget->disconnect();
-
-    // Remove all items
-    ui->tableWidget->clearContents();
-
-    // Set row count to 0 (remove rows)
-    ui->tableWidget->setRowCount(0);
-
-    ui->frameOperators->hide();
-    ui->tableView->show();
-    ui->labelSelect->show();
-
-
-
-    listChange.clear();
-
+    otherAzs();
 }
 
 void MainWindow::on_pushButtonOtherAzs_clicked()
 {
+    if(listChange.size()>0) {
+        QString messStr = QString("<p><strong>Остались не выполнены следующие изменения:</strong></p>"
+                                  "<ol>");
+        for(int i=0;i<listChange.size();++i){
+            messStr+="<li>"+listChange.at(i).at(0)+"</li>";
+        }
+        messStr+="</ol>";
 
+        messStr+="<strong>Пожалуйста подтвердите следующие действия.</strong>";
+
+        QMessageBox msgBox(QMessageBox::Warning,
+                           QString::fromUtf8("Не сохраненные изменения"),
+                           messStr,
+                           0, this);
+        msgBox.addButton(QString::fromUtf8("&Применить изменения"),
+                         QMessageBox::AcceptRole);
+        msgBox.addButton(QString::fromUtf8("&Отменить изменения"),
+                         QMessageBox::RejectRole);
+
+        if (msgBox.exec() == QMessageBox::AcceptRole){
+            qDebug() << "Будем сохранять";
+            applayAzs();
+        }
+        else {
+            listChange.clear();
+            otherAzs();
+        }
+    }
 }
 
 void MainWindow::enabledApplay()
@@ -527,4 +531,18 @@ void MainWindow::enabledApplay()
     } else {
         ui->pushButtonApplay->setEnabled(false);
     }
+}
+
+void MainWindow::otherAzs()
+{
+    // Remove all items
+    ui->tableWidget->clearContents();
+
+    // Set row count to 0 (remove rows)
+    ui->tableWidget->setRowCount(0);
+
+    ui->frameOperators->hide();
+    ui->tableView->show();
+    ui->labelSelect->show();
+    listChange.clear();
 }

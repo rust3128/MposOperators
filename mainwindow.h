@@ -55,7 +55,6 @@ private slots:
     void on_pushButtonApplay_clicked();
     void on_pushButtonActive_clicked();
     void on_tableWidget_itemSelectionChanged();
-
     void on_pushButtonOtherAzs_clicked();
 
 private:
@@ -85,6 +84,7 @@ private:
     void createUIOperarors();
     void applayAzs();
     void enabledApplay();
+    void otherAzs();
 };
 
 #endif // MAINWINDOW_H

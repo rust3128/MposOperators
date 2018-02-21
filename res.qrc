@@ -10,5 +10,7 @@
         <file>Images/exit.png</file>
         <file>Images/user_removed.png</file>
         <file>Images/logo.ico</file>
+        <file>Images/commit.png</file>
+        <file>Images/GasStation.png</file>
     </qresource>
 </RCC>

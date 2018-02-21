@@ -21,7 +21,9 @@ static bool createTable()
     query.exec(strSQL);
     strSQL="INSERT INTO `connections` VALUES (1,'shell','172.26.4.112','shell00','SYSDBA','shelldb00');";
     query.exec(strSQL);
-
+    strSQL="CREATE TABLE `usedconn` (`currentID` INTEGER NOT NULL)";
+    query.exec(strSQL);
+    strSQL="INSERT INTO `usedconn`(`currentID`) VALUES (1)";
 
     qInfo(logInfo()) << "Файл настроек приложения успешно создан.";
     return true;
