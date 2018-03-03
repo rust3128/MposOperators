@@ -5,6 +5,7 @@
 #include "dbaseconnect.h"
 #include "newoperatordialog.h"
 #include "operatorchanged.h"
+#include "connectionlistdialog.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
@@ -22,10 +23,14 @@ MainWindow::MainWindow(QSqlRecord user, QWidget *parent) :
     ui->labelMessageWork->hide();
     listChange.clear();
 
-
-    infoUser2StatusBar();
     openCentralDB();
+    infoUser2StatusBar();
     setupTerminalModel();
+
+    if(currentUser.id!=1){
+        ui->actionListConnect->setEnabled(false);
+        ui->actionUsers->setEnabled(false);
+    }
 
     connect(ui->radioButtonActive,SIGNAL(clicked()),this,SLOT(filterSet()));
     connect(ui->radioButtonAll,SIGNAL(clicked()),this,SLOT(filterSet()));
@@ -45,8 +50,8 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     event->ignore();
-    if (QMessageBox::Yes == QMessageBox::question(this, "Закрыть?",
-                              "Уверены?",
+    if (QMessageBox::Yes == QMessageBox::question(this, "Завершение работы программы",
+                              "Вы уверен что хотите закрыть программу?",
                               QMessageBox::Yes|QMessageBox::No))
         {
             qInfo(logInfo()) << "Завершение работы программы.";
@@ -59,23 +64,29 @@ void MainWindow::infoUser2StatusBar()
     labelUser = new QLabel(this);
     labelUser->setText("Пользователь: "+currentUser.fio);
     ui->statusBar->addPermanentWidget(labelUser);
+
+    QLabel *labelConn = new QLabel(this);
+    labelConn->setText("Текущее подключение: "+currConnectName);
+    ui->statusBar->addWidget(labelConn);
 }
 
 void MainWindow::openCentralDB()
 {
-    int currIdConn;
+
     QSqlDatabase dblite = QSqlDatabase::database("lite");
     QSqlDatabase fbcentral = QSqlDatabase::addDatabase("QIBASE","central");
     QSqlQuery q = QSqlQuery(dblite);
 
     QString strSQL = "SELECT currentID FROM usedconn";
-    q.exec();
+    q.exec(strSQL);
     q.next();
     currIdConn=q.value(0).toInt();
 
-    strSQL = "SELECT * FROM connections WHERE conn_id=3";
+    strSQL = QString("SELECT * FROM connections WHERE conn_id=%1").arg(currIdConn);
     q.exec(strSQL);
     q.next();
+
+    currConnectName=q.value("conn_name").toString();
 
     fbcentral.setHostName(q.value("conn_host").toString());
     fbcentral.setDatabaseName(q.value("conn_db").toString());
@@ -160,7 +171,7 @@ void MainWindow::on_tableView_doubleClicked(const QModelIndex &idx)
     connect(dbConn,SIGNAL(sendOperators(QVector<dataOp>)),this,SLOT(getTableOperators(QVector<dataOp>)),Qt::DirectConnection);
     connect(dbConn,&DBaseConnect::sendCurrentOperators,this,&MainWindow::getCurrentOperators,Qt::DirectConnection);
     connect(dbConn,SIGNAL(sendStatus(bool)),this,SLOT(getStaus(bool)),Qt::DirectConnection);
-    connect(dbConn,SIGNAL(connectionError(QString)),this,SLOT(errogConnectInfo(QString)),Qt::DirectConnection);
+    connect(dbConn,&DBaseConnect::connectionError,this,&MainWindow::errogConnectInfo);
 
     thread->start();
     dbConn->moveToThread(thread);
@@ -174,11 +185,15 @@ void MainWindow::startDBConnect()
 
 void MainWindow::finishDBConnect()
 {
-    progress->cancel();
+
+
     if(isConnected){
         qInfo(logInfo()) << "Подключились к терминалу " << modelTerminals->data(modelTerminals->index(idxTerm.row(),0)).toString();
+        progress->cancel();
     } else {
         qInfo(logInfo()) << "Не возможно подключится к терминалу" << modelTerminals->data(modelTerminals->index(idxTerm.row(),0)).toString();
+        progress->deleteLater();
+        otherAzs();
         return;
     }
     ui->frameOperators->show();
@@ -521,6 +536,8 @@ void MainWindow::on_pushButtonOtherAzs_clicked()
             listChange.clear();
             otherAzs();
         }
+    } else {
+        otherAzs();
     }
 }
 
@@ -545,4 +562,23 @@ void MainWindow::otherAzs()
     ui->tableView->show();
     ui->labelSelect->show();
     listChange.clear();
+}
+
+void MainWindow::on_actionListConnect_triggered()
+{
+    ConnectionListDialog *connDlg = new ConnectionListDialog(currIdConn,currConnectName);
+    connDlg->exec();
+
+    if(connDlg->getChage()){
+        QMessageBox::information(this,"Критические действия",
+                                 "Были произведены критические настройки приложения.\n"
+                                 "Необходимо закрыть программу.");
+        this->close();
+    }
+
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    this->close();
 }

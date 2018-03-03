@@ -247,7 +247,15 @@ font: 75 12pt &quot;Noto Sans&quot;;</string>
      <string>Настрока</string>
     </property>
     <addaction name="actionUsers"/>
+    <addaction name="actionListConnect"/>
    </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>Файл</string>
+    </property>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="menuFile"/>
    <addaction name="menu"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -257,6 +265,9 @@ font: 75 12pt &quot;Noto Sans&quot;;</string>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionUsers"/>
+   <addaction name="actionListConnect"/>
+   <addaction name="actionExit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionUsers">
@@ -269,6 +280,30 @@ font: 75 12pt &quot;Noto Sans&quot;;</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+U</string>
+   </property>
+  </action>
+  <action name="actionListConnect">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/Images/connect.png</normaloff>:/Images/connect.png</iconset>
+   </property>
+   <property name="text">
+    <string>Подключения</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+C</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/Images/exit.png</normaloff>:/Images/exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Выход</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+X</string>
    </property>
   </action>
  </widget>

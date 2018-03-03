@@ -31,7 +31,8 @@ SOURCES += \
     usersdialog.cpp \
     dbaseconnect.cpp \
     newoperatordialog.cpp \
-    operatorchanged.cpp
+    operatorchanged.cpp \
+    connectionlistdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -42,13 +43,15 @@ HEADERS += \
     dbaseconnect.h \
     operatorsdata.h \
     newoperatordialog.h \
-    operatorchanged.h
+    operatorchanged.h \
+    connectionlistdialog.h
 
 FORMS += \
         mainwindow.ui \
     logindialog.ui \
     usersdialog.ui \
-    newoperatordialog.ui
+    newoperatordialog.ui \
+    connectionlistdialog.ui
 
 DISTFILES +=
 

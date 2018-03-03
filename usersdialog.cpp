@@ -82,8 +82,6 @@ void UsersDialog::on_pbNew_clicked()
     ui->pbDelete->setDisabled(true);
     isNew=true;
     manageData(-1);
-
-
 }
 
 void UsersDialog::on_pbSave_clicked()
@@ -106,6 +104,7 @@ void UsersDialog::on_pbSave_clicked()
         ui->pbNew->setDisabled(false);
         ui->pbEdit->setDisabled(false);
         ui->pbDelete->setDisabled(false);
+        qInfo(logInfo()) << "Добавлен пользователь "+ui->leLogin->text();
     }
 
 }
@@ -140,12 +139,11 @@ void UsersDialog::on_pbDelete_clicked()
                            << q.lastError().text();
         return;
     }
-    qDebug(logInfo()) << "Пользователь " << modelUsers->data(modelUsers->index(idx.row(),1)).toString() << "деактивирован.";
+    qInfo(logInfo()) << "Пользователь " << modelUsers->data(modelUsers->index(idx.row(),1)).toString() << "деактивирован.";
     ui->pbEdit->setDisabled(true);
     ui->pbDelete->setDisabled(true);
     modelUsers->select();
     modelUsers->setFilter("user_active=1");
-
 }
 
 void UsersDialog::on_pbExit_clicked()

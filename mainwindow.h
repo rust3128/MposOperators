@@ -57,6 +57,10 @@ private slots:
     void on_tableWidget_itemSelectionChanged();
     void on_pushButtonOtherAzs_clicked();
 
+    void on_actionListConnect_triggered();
+
+    void on_actionExit_triggered();
+
 private:
     Ui::MainWindow *ui;
     userdata currentUser;
@@ -75,6 +79,8 @@ private:
     QIcon icoDel = QIcon(":/Images/user_delete.png");
     QTableWidgetItem *item; //Текущий оператора.
     int currentOperator;    //ID оператора на АЗС на котолрого открыта смена.
+    int currIdConn;         //текущее подключене к ЦБ
+    QString currConnectName;
 private:
     void closeEvent(QCloseEvent *event);
     void infoUser2StatusBar();

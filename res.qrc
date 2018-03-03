@@ -12,5 +12,6 @@
         <file>Images/logo.ico</file>
         <file>Images/commit.png</file>
         <file>Images/GasStation.png</file>
+        <file>Images/connect.png</file>
     </qresource>
 </RCC>

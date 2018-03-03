@@ -1,4 +1,5 @@
 #include "dbaseconnect.h"
+#include "loggingcategories.h"
 #include <QtSql>
 #include <QDebug>
 #include <QSqlQuery>
@@ -28,7 +29,7 @@ void DBaseConnect::createConnection()
     if(!db.open()) {
         statusConnect=false;
         QString errorString =  db.lastError().text();
-        qDebug() <<  "Не возможно подключиться к базе данных." << endl << "Причина:" << errorString;
+        qCritical(logCritical()) <<  "Не возможно подключиться к базе данных." << endl << "Причина:" << errorString;
         emit connectionError(errorString);
     } else {
         statusConnect=true;

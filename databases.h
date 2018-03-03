@@ -24,6 +24,7 @@ static bool createTable()
     strSQL="CREATE TABLE `usedconn` (`currentID` INTEGER NOT NULL)";
     query.exec(strSQL);
     strSQL="INSERT INTO `usedconn`(`currentID`) VALUES (1)";
+    query.exec(strSQL);
 
     qInfo(logInfo()) << "Файл настроек приложения успешно создан.";
     return true;
