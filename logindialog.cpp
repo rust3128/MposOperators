@@ -26,7 +26,8 @@ void LoginDialog::createUI()
     users->setQuery("SELECT user_id, user_name, user_pass, user_fio FROM users", dblite);
     ui->comboBoxLogin->setModel(users);
     ui->comboBoxLogin->setModelColumn(1);
-//    ui->comboBoxLogin->setCurrentIndex(-1);
+    ui->comboBoxLogin->setCurrentIndex(-1);
+    ui->comboBoxLogin->setCurrentText("Выберите пользователя...");
     currUserID=-1;
     ui->labelInfo->setText("");
 }

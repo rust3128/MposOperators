@@ -98,6 +98,7 @@ void MainWindow::openCentralDB()
         QMessageBox::critical(0,"Ошибка подключения", QString("Не возможно открыть базу данных!\n%1\nПроверьте настройку подключения.")
                 .arg(fbcentral.lastError().text()),
                 QMessageBox::Ok);
+        on_actionListConnect_triggered();
     }
 
 
