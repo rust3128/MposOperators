@@ -410,7 +410,8 @@ void MainWindow::on_pushButtonActive_clicked()
         strNote = QString("Увольнение оператора.<br>Логин: <b>%1</b>, ФИО: <b>%2</b>.")
                         .arg(opVector.at(item->row()).login)
                         .arg(opVector.at(item->row()).fio);
-        strSQL = QString("UPDATE operators SET isactive='F' WHERE operator_id=%1")
+        strSQL = QString("UPDATE operators o SET o.isactive='F' WHERE o.operator_id=%1 "
+                         "and o.OPERATOR_ID <> (select s.OPERATOR_ID from SHIFTS s where s.SHIFT_ID in (SELECT MAX(a.SHIFT_ID) from SHIFTS a))")
                         .arg(opVector.at(item->row()).Id);
         ui->tableWidget->item(item->row(),1)->setBackground(Qt::red);
         ui->tableWidget->item(item->row(),2)->setBackground(Qt::red);
