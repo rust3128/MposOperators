@@ -62,7 +62,7 @@ void ConnectionListDialog::on_pushButtonCurrent_clicked()
     if(!q.exec()){
         qCritical(logCritical()) << "Неудалось установить текущее соединение!" << q.lastError().text();
     } else {
-        qInfo(logInfo()) << "Соединение "+selectedName+" установлено как текщее.";
+        qInfo(logInfo()) << "Соединение "+selectedName+" установлено как текущее.";
         currentID=selectedID;
         currentName=selectedName;
         ui->labelCurrent->setText("Текущее подключение: "+currentName);

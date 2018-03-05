@@ -27,7 +27,6 @@ void LoginDialog::createUI()
     ui->comboBoxLogin->setModel(users);
     ui->comboBoxLogin->setModelColumn(1);
     ui->comboBoxLogin->setCurrentIndex(-1);
-    ui->comboBoxLogin->setCurrentText("Выберите пользователя...");
     currUserID=-1;
     ui->labelInfo->setText("");
 }
